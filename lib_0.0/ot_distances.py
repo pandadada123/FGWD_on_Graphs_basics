@@ -149,7 +149,7 @@ class Fused_Gromov_Wasserstein_distance():
                 C1[i][ii] = nx.shortest_path_length(graph1.nx_graph,source=i,target=ii)
                 
         
-        # C2=graph2.distance_matrix(method=self.method)
+        # C2=graph2.distance_matrix(method=self.method)C1 = np.zeros ([n1,n1])
         C2 = np.zeros ([n2,n2])
         for j in range(n2):
             for jj in range(n2):  
