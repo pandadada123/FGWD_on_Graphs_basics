@@ -284,6 +284,7 @@ def cg(a, b, M, reg, f, df, G0=None, numitmax=500, stopThr=1e-09, verbose=False,
         old_fval = f_val
         #G=xt
         # problem linearization
+        temp = df(G)
         Mi = M + reg * df(G) #Gradient(xt)
         # set M positive
         Mi += Mi.min() 

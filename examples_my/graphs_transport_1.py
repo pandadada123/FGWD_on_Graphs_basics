@@ -67,18 +67,18 @@ nodes2=g2.nodes()
 p1=np.ones(len(nodes1))/len(nodes1)
 p2=np.ones(len(nodes2))/len(nodes2)
 
-# fea_matric = 'dirac'
-# fea_matric = 'hamming'
-fea_matric = 'sqeuclidean'
+# fea_metric = 'dirac'
+# fea_metric = 'hamming'
+fea_metric = 'sqeuclidean'
 
 #%%
 # FGWD
 alpha=0.5
-dfgw,log_FGWD,transp_FGWD=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_matric,method='shortest_path').graph_d(g1,g2,p1,p2)
+dfgw,log_FGWD,transp_FGWD=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_metric,method='shortest_path').graph_d(g1,g2,p1,p2)
 # WD
-dw,transp_WD=Wasserstein_distance(features_metric=fea_matric).graph_d(g1,g2,p1,p2)
+dw,transp_WD=Wasserstein_distance(features_metric=fea_metric).graph_d(g1,g2,p1,p2)
 # GWD
-dgw,log_GWD,transp_GWD=Fused_Gromov_Wasserstein_distance(alpha=1,features_metric=fea_matric,method='shortest_path').graph_d(g1,g2,p1,p2)
+dgw,log_GWD,transp_GWD=Fused_Gromov_Wasserstein_distance(alpha=1,features_metric=fea_metric,method='shortest_path').graph_d(g1,g2,p1,p2)
 print('Wasserstein distance={}, Gromov distance={} \nFused Gromov-Wasserstein distance for alpha {} = {}'.format(dw,dgw,alpha,dfgw))
 
 # matching when alpha = 0.5 
@@ -93,7 +93,7 @@ plt.show()
 alld=[]
 x=np.linspace(0,1,100)
 for alpha in x:
-    d,log,transp=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_matric).graph_d(g1,g2,p1,p2)
+    d,log,transp=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_metric).graph_d(g1,g2,p1,p2)
     alld.append(d)
 plt.plot(x,alld)
 plt.title('Evolution of FGW dist in wrt alpha \n max={}'.format(x[np.argmax(alld)]))
@@ -105,7 +105,7 @@ plt.show()
 fig=plt.figure(figsize=(10,8))
 thresh=0.004
 alpha_opt=x [ alld.index(max(alld)) ]
-dfgw_opt,log_FGWD_opt,transp_FGWD_opt=Fused_Gromov_Wasserstein_distance(alpha=alpha_opt,features_metric=fea_matric).graph_d(g1,g2,p1,p2)
+dfgw_opt,log_FGWD_opt,transp_FGWD_opt=Fused_Gromov_Wasserstein_distance(alpha=alpha_opt,features_metric=fea_metric).graph_d(g1,g2,p1,p2)
 # d=dfgw.graph_d(g1,g2)
 # plt.title('FGW coupling, dist : '+str(np.round(dfgw,3)),fontsize=15)
 plt.title('FGW coupling, alpha = opt')

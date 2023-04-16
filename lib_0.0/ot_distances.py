@@ -200,7 +200,7 @@ class Fused_Gromov_Wasserstein_distance():
         self.log=log
 
         # return log['loss','delta_fval','gradient', 'descent'][::-1][0],transpwgw  # the loss value in the last iteration is the returned value
-        return log['loss'][::-1][0],log,transpwgw
+        return log['loss'][::-1][0],log,transpwgw,M,C1,C2
 
     def get_tuning_params(self):
         """Parameters that defined the FGW distance """

@@ -67,15 +67,15 @@ nodes2=G2.nodes()
 p1=np.ones(len(nodes1))/len(nodes1)
 p2=np.ones(len(nodes2))/len(nodes2)
 
-# fea_matric = 'dirac'
-# fea_matric = 'hamming'
-fea_matric = 'sqeuclidean'
+# fea_metric = 'dirac'
+# fea_metric = 'hamming'
+fea_metric = 'sqeuclidean'
 
 #%%
 alld=[]
 x=np.linspace(0,1,100)
 for alpha in x:
-    d,log,transp=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_matric).graph_d(G1,G2,p1,p2)
+    d,log,transp=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_metric).graph_d(G1,G2,p1,p2)
     alld.append(d)
 plt.plot(x,alld)
 plt.title('Evolution of FGW dist in wrt alpha \n max={}'.format(x[np.argmax(alld)]))
@@ -86,7 +86,7 @@ plt.show()
 # FGWD
 fig=plt.figure(figsize=(10,8))
 thresh=0.004
-dfgw,log_FGWD,transp_FGWD=Fused_Gromov_Wasserstein_distance(alpha=0.8,features_metric=fea_matric).graph_d(G1,G2,p1,p2)
+dfgw,log_FGWD,transp_FGWD=Fused_Gromov_Wasserstein_distance(alpha=0.8,features_metric=fea_metric).graph_d(G1,G2,p1,p2)
 # d=gwdist.graph_d(G1,G2)
 # plt.title('FGW coupling, dist : '+str(np.round(d,3)),fontsize=15)
 draw_transp(G1,G2,transp_FGWD,shiftx=2,shifty=0.5,thresh=thresh,
@@ -96,7 +96,7 @@ plt.show()
 # GWD
 fig=plt.figure(figsize=(10,8))
 thresh=0.004
-dgw,log_GWD,transp_GWD=Fused_Gromov_Wasserstein_distance(alpha=1,features_metric=fea_matric).graph_d(G1,G2,p1,p2)
+dgw,log_GWD,transp_GWD=Fused_Gromov_Wasserstein_distance(alpha=1,features_metric=fea_metric).graph_d(G1,G2,p1,p2)
 # d=gwdist.graph_d(G1,G2)
 # plt.title('GW coupling, dist : '+str(np.round(d,3)),fontsize=15)
 draw_transp(G1,G2,transp_GWD,shiftx=2,shifty=0.5,thresh=thresh,
