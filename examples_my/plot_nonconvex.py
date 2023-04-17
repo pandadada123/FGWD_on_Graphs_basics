@@ -113,7 +113,7 @@ L=cal_L(C1,C2)
 #         y2[j][i]=(1-alpha)*np.sum(M * T) + alpha * y[j][i] # FGWD
                          
 AA, BB = np.meshgrid(A, B)
-reg=0.1
+reg=0
 for i in range(len(A)):
     for j in range(len(B)):
         a=AA[i,j]
@@ -159,12 +159,12 @@ y[np.isnan(y)] = 0 # set nan to zero
 # levels = np.arange (-3/18, np.max(y), 1/18)
 levels = np.arange (5/18, np.max(y), 1/18)
 
-h = plt.contour(A, B, y, levels=levels, cmap=cm.coolwarm)
+h = plt.contour(A, B, y, levels=levels, cmap=cm.coolwarm, linewidths=3)
 plt.clabel(h, inline=1, fontsize=10, colors='k')
 plt.axis('scaled')
 # plt.colorbar()
-plt.xlabel('a')
-plt.ylabel('b')
+plt.xlabel('a',fontsize=20)
+plt.ylabel('b',fontsize=20)
 
 # plot feasible set
 B1 = 1/6-A
@@ -245,12 +245,12 @@ y2[np.isnan(y2)] = 0 # set nan to zero
 # levels = np.arange (-3/18, np.max(y2), 1/18)
 levels = np.arange (5/18, np.max(y2), 1/18)
 
-h = plt.contour(A, B, y2, levels=levels, cmap=cm.coolwarm)
+h = plt.contour(A, B, y2, levels=levels, cmap=cm.coolwarm, linewidths=3)
 plt.clabel(h, inline=1, fontsize=10, colors='k')
 plt.axis('scaled')
 # plt.colorbar()
-plt.xlabel('a')
-plt.ylabel('b')
+plt.xlabel('a',fontsize=20)
+plt.ylabel('b',fontsize=20)
 
 # plot feasible set
 B1 = 1/6-A
