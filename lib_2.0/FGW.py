@@ -6,7 +6,7 @@ import numpy.matlib
 # import torch
 import ot
 import optim
-from utils import dist,reshaper
+# from utils import dist,reshaper
 # from bregman import sinkhorn_scaling
 from scipy import stats
 from scipy.sparse import random
@@ -14,34 +14,133 @@ from scipy.sparse import random
 class StopError(Exception):
     pass
 
-def cal_L(C1,C2):
-    """calculate the constant matrix L
-    """
-    L=np.zeros([len(C1),len(C1[1]),len(C2),len(C2[1])]) # L is a 4-dim tensor constant            
-    for i in range(len(C1)):
-        for ii in range(len(C1[1])):         
-                for j in range(len(C2)):
-                    for jj in range(len(C2[1])):   
-                                   c1=C1[i][ii]
-                                   c2=C2[j][jj]
-                                   # np.append(L,pow((c1-c2),2))    
-                                   L[i][ii][j][jj]=pow((c1-c2),2) 
+""" trick by Peyre 2016 and Liu 2023"""
 
-    return L
-    
-def tensor_matrix(L,T):
-    """calculate the tensor-matrix product
+def init_matrix(C1,C2,p,q,loss_fun='square_loss'):
+    """ Return loss matrices and tensors for Gromov-Wasserstein fast computation
+    Returns the value of \mathcal{L}(C1,C2) \otimes T with the selected loss
+    function as the loss function of Gromow-Wasserstein discrepancy.
+    The matrices are computed as described in Proposition 1 in [1]
+    Where :
+        * C1 : Metric cost matrix in the source space
+        * C2 : Metric cost matrix in the target space
+        * T : A coupling between those two spaces
+    The square-loss function L(a,b)=(1/2)*|a-b|^2 is read as :
+        L(a,b) = f1(a)+f2(b)-h1(a)*h2(b) with :
+            * f1(a)=(a^2)
+            * f2(b)=(b^2)
+            * h1(a)=a
+            * h2(b)=2b
+    Parameters
+    ----------
+    C1 : ndarray, shape (ns, ns)
+         Metric cost matrix in the source space
+    C2 : ndarray, shape (nt, nt)
+         Metric costfr matrix in the target space
+    T :  ndarray, shape (ns, nt)
+         Coupling between source and target spaces
+    p : ndarray, shape (ns,)
+    Returns
+    -------
+    constC : ndarray, shape (ns, nt)
+           Constant C matrix in Eq. (6)
+    hC1 : ndarray, shape (ns, ns)
+           h1(C1) matrix in Eq. (6)
+    hC2 : ndarray, shape (nt, nt)
+           h2(C) matrix in Eq. (6)
+    References
+    ----------
+    .. [1] Peyré, Gabriel, Marco Cuturi, and Justin Solomon,
+    "Gromov-Wasserstein averaging of kernel and distance matrices."
+    International Conference on Machine Learning (ICML). 2016.
+    .. [2] X. Liu, R. Zeira, and B. J. Raphael, 
+    “PASTE2: Partial Alignment of Multi-slice Spatially Resolved Transcriptomics Data.” 
+    bioRxiv, p. 2023.01.08.523162, Jan. 08, 2023. doi: 10.1101/2023.01.08.523162.
+
     """
-    S=np.shape(L)
-    opt_tensor=np.zeros([S[0],S[2]])
-    for i in range(S[0]):
-        for ii in range(S[1]):         
-                for j in range(S[2]):
-                    for jj in range(S[3]):
-                        opt_tensor[i][j]+=L[i][ii][j][jj]*T[ii][jj]
-    return opt_tensor
-          
-def gwloss(L,T):
+            
+    if loss_fun == 'square_loss':
+        def f1(a):
+            return a**2 
+
+        def f2(b):
+            return b**2
+
+        def h1(a):
+            return a
+
+        def h2(b):
+            return 2*b
+    
+    elif loss_fun == 'kl_loss': # from Liu 2023
+        def f1(a):
+            return a * np.log(a + 1e-15) - a
+
+        def f2(b):
+            return b
+
+        def h1(a):
+            return a
+
+        def h2(b):
+            return np.log(b + 1e-15)
+        #%%
+    constC1 = np.dot(
+                     np.dot(f1(C1), p.reshape(-1, 1)),
+                     np.ones(len(q)).reshape(1, -1)
+                     )
+    constC2 = np.dot(
+                     np.ones(len(p)).reshape(-1, 1),
+                     np.dot(q.reshape(1, -1), f2(C2).T)
+                     )
+    
+    #%% also suitable for partial coupling (marginals of T does not sum up to 1) from Liu 2023
+    # constC1 = np.dot(
+    #                 f1(C1),
+    #                 np.dot(T, np.ones(C2.shape[0]).reshape(-1, 1))
+    #                 )
+
+    # constC2 = np.dot(
+    #                 np.dot(np.ones(C1.shape[0]).reshape(1, -1), T),
+    #                 f2(C2).T
+    #                 )  
+    
+    #%%
+    constC=constC1+constC2
+    hC1 = h1(C1)
+    hC2 = h2(C2)
+        
+    return constC,hC1,hC2
+
+def tensor_product(constC,hC1,hC2,T):
+
+    """ Return the tensor for Gromov-Wasserstein fast computation
+    The tensor is computed as described in Proposition 1 Eq. (6) in [1].
+    Parameters
+    ----------
+    constC : ndarray, shape (ns, nt)
+           Constant C matrix in Eq. (6)
+    hC1 : ndarray, shape (ns, ns)
+           h1(C1) matrix in Eq. (6)
+    hC2 : ndarray, shape (nt, nt)
+           h2(C) matrix in Eq. (6)
+    Returns
+    -------
+    tens : ndarray, shape (ns, nt)
+           \mathcal{L}(C1,C2) \otimes T tensor-matrix multiplication result
+    References
+    ----------
+    .. [1] Peyré, Gabriel, Marco Cuturi, and Justin Solomon,
+    "Gromov-Wasserstein averaging of kernel and distance matrices."
+    International Conference on Machine Learning (ICML). 2016.
+    """
+    
+    A=-np.dot(hC1, T).dot(hC2.T)
+    tens = constC+A
+
+    return tens
+
+def gwloss(constC,hC1,hC2,T):
 
     """ Return the Loss for Gromov-Wasserstein
     The loss is computed as described in Proposition 1 Eq. (6) in [1].
@@ -66,11 +165,13 @@ def gwloss(L,T):
     International Conference on Machine Learning (ICML). 2016.
     """
 
+    tens=tensor_product(constC,hC1,hC2,T) 
+    # tens=tensor_product(constC,hC1,hC2,T)  + 0.01 * np.sum(np.log(T)*T)
+               
+    return np.sum(tens*T) 
 
-    return np.sum( tensor_matrix(L, T) * T)   # the objective function of GW
-    # return np.sum( tensor_matrix(L, T) * T)   + 0.01 * np.sum(np.log(T)*T)
 
-def gwggrad(L,T):
+def gwggrad(constC,hC1,hC2,T):
     
     """ Return the gradient for Gromov-Wasserstein
     The gradient is computed as described in Proposition 2 in [1].
@@ -95,8 +196,8 @@ def gwggrad(L,T):
     International Conference on Machine Learning (ICML). 2016.
     """
           
-    return 2*tensor_matrix(L, T)
-    # return 2*tensor_matrix(L, T)  + 0.01 * (  np.log(T)+np.ones(np.shape(T))  )
+    return 2*tensor_product(constC,hC1,hC2,T) 
+    # return 2*tensor_product(constC,hC1,hC2,T) + 0.01 * (  np.log(T)+np.ones(np.shape(T))  )
 
 def fgw_lp(M,C1,C2,p,q,loss_fun='square_loss',alpha=1,amijo=True,G0=None,**kwargs): 
     """
@@ -154,12 +255,14 @@ def fgw_lp(M,C1,C2,p,q,loss_fun='square_loss',alpha=1,amijo=True,G0=None,**kwarg
     """
 
     
-            
+    constC,hC1,hC2=init_matrix(C1,C2,p,q,loss_fun)        
     
     # for GWD, M=0
                      
     if G0 is None:
-        # G0=p[:,None]*q[None,:]
+        
+    #%% G0 initialization 
+        G0=p[:,None]*q[None,:]
         # G0=np.outer(ot.unif(10),ot.unif(6))
         # G0 = np.outer(np.array([0.05,0.05,0.05,0.05,0.05, # not right, does not satisfy the constraint
         #                         0.05,0.05,0.05,0.05,0.55]),np.array([1/6,1/6,1/6,1/6,1/6,1/6]))
@@ -175,7 +278,7 @@ def fgw_lp(M,C1,C2,p,q,loss_fun='square_loss',alpha=1,amijo=True,G0=None,**kwarg
         
         # G0=abs(G0)
         
-        G0 = np.outer(p, q)
+        # G0 = np.outer(p, q)
         
         # G0[:-1] = 0 # set last column to be zero 
         # G0[:-1] = 100
@@ -195,16 +298,21 @@ def fgw_lp(M,C1,C2,p,q,loss_fun='square_loss',alpha=1,amijo=True,G0=None,**kwarg
         # epsilon = 2*1e-2 * np.random.randn()
         # G0=G0+epsilon*temp 
         
-        
-    L=cal_L(C1,C2)
+   #%% no trick     
+    # L=cal_L(C1,C2)
     
-    def f(G):
-        return gwloss(L,G)
+    # def f(G):
+    #     return gwloss(L,G)
     
-    def df(G):        
-        return gwggrad(L,G)
-    
-    # return optim.cg(p,q,M,alpha,f,df,G0,amijo=amijo,C1=C1,C2=C2,constC=constC,**kwargs) # for GWD, alpha = reg=1, M=0
-    return optim.cg(p,q,M,alpha,f,df,G0,amijo=amijo,C1=C1,C2=C2,constC=None,**kwargs) # for GWD, alpha = reg=1, M=0
+    # def df(G):        
+    #     return gwggrad(L,G)
+    # return optim.cg(p,q,M,alpha,f,df,G0,amijo=amijo,C1=C1,C2=C2,constC=None,**kwargs) # for GWD, alpha = reg=1, M=0
 
+#%% trick by Peyre
+    def f(G):
+        return gwloss(constC,hC1,hC2,G)
+    def df(G):
+        return gwggrad(constC,hC1,hC2,G)
     
+    return optim.cg(p,q,M,alpha,f,df,G0,amijo=amijo,C1=C1,C2=C2,constC=constC,**kwargs) # for GWD, alpha = reg=1, M=0
+     
