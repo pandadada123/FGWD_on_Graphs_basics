@@ -123,12 +123,12 @@ for i in range(len(A)):
             b=BB[i,j,k]
             c=CC[i,j,k]
             T=np.array([[a,1/4-a],[b,1/4-b],[c,1/4-c],[1/2-a-b-c,-1/4+a+b+c]])
-            y[i][j]=gwloss(L,T) # GWD
-            y2[i][j]=(1-alpha)*np.sum(M * T) + alpha * y[i][j] # FGWD
+            y[i][j][k]=gwloss(L,T) # GWD
+            y2[i][j][k]=(1-alpha)*np.sum(M * T) + alpha * y[i][j][k]# FGWD
             # y_proj[i][j]=0 # projectiion points
             
-            y[i][j]=y[i][j] + reg * np.sum(np.log(T)*T)
-            y2[i][j]=y2[i][j] + reg * np.sum(np.log(T)*T)
+            y[i][j][k]=y[i][j][k] + reg * np.sum(np.log(T)*T)
+            y2[i][j][k]=y2[i][j][k] + reg * np.sum(np.log(T)*T)
         
 #%% set all values outside condition to nan
 # y[AA+BB > 1/2] = np.nan

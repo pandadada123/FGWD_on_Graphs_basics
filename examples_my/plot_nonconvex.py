@@ -28,31 +28,68 @@ plt.close("all")
 
 #%% Define two graphs 
 G1=Graph()
-G1.add_attributes({0:1,1:7,2:5})    # add color to nodes
-G1.add_edge((0,1))
+# G1.add_attributes({0:1,1:7,2:5})    # add color to nodes
+# G1.add_edge((0,1))
+# G1.add_edge((1,2))
+# G1.add_edge((2,0))
+G1.add_attributes({1:3,2:6,3:9})    # add color to nodes
 G1.add_edge((1,2))
-G1.add_edge((2,0))
+G1.add_edge((2,3))
+G1.add_edge((3,1))
 
 G2=Graph()
-G2.add_attributes({0:1,1:7})
-G2.add_edge((0,1))
+G2.add_attributes({1:3,2:6})
+G2.add_edge((1,2))
 
 g1=G1.nx_graph
 g2=G2.nx_graph
 
+#%% Define two graphs 
+# G1=Graph()
+# G1.add_attributes({1:3,2:6,3:6,4:6,5:6})    # add color to nodes
+# G1.add_edge((1,2))
+# G1.add_edge((2,3))
+# G1.add_edge((3,4))
+# G1.add_edge((4,5))
+# G1.add_edge((1,5))
+# G1.add_edge((1,3))
+# G1.add_edge((1,4))
+
+# G2=Graph()
+# G2.add_attributes({1:6,2:6,3:6,4:6,5:3})    # add color to nodes
+# G2.add_edge((1,2))
+# G2.add_edge((2,3))
+# G2.add_edge((3,4))
+# G2.add_edge((4,5))
+# G2.add_edge((1,5))
+# G2.add_edge((1,3))
+# G2.add_edge((1,4))
+
+# g1=G1.nx_graph
+# g2=G2.nx_graph
+
 #%% Show the graphs
 vmin=0
 vmax=9  # the range of color
-plt.figure(figsize=(8,5))
+# plt.figure(figsize=(8,5))
+plt.figure()
 draw_rel(g1,vmin=vmin,vmax=vmax,with_labels=True,draw=False)
 draw_rel(g2,vmin=vmin,vmax=vmax,with_labels=True,shiftx=3,draw=False)
-plt.title('Two graphs. Color indicates the label')
+# plt.title('Two graphs. Color indicates the label')
+plt.axis('off')
 plt.show()
 
 #%% compare GWD and FGWD use and package and show the couplings
 
 p1=ot.unif(3)
-p2=ot.unif(2)
+# p1 = np.array([1/2-1e-2, 1/2-1e-2, 2*1e-2])
+# p1 = np.array([1/2,1/3,1/6])
+p2 = ot.unif(2)
+
+# p1=ot.unif(5)
+# # p1 = np.array([1/2-1e-2, 1/2-1e-2, 2*1e-2])
+# # p1 = np.array([1/2,1/3,1/6])
+# p2=ot.unif(5)
 
 fea_metric = 'dirac'
 # fea_metric = 'hamming'
@@ -63,25 +100,42 @@ thresh=0.004
 # WD           
 fig = plt.figure()
 dw,transp_WD=Wasserstein_distance(features_metric=fea_metric).graph_d(G1,G2,p1,p2)
-plt.title('WD coupling')
+# plt.title('WD coupling')
 draw_transp(G1,G2,transp_WD,shiftx=2,shifty=0.5,thresh=thresh,swipy=True,swipx=False,with_labels=True,vmin=vmin,vmax=vmax)
+plt.axis('off')
 plt.show()
 
 # GWD
 fig = plt.figure()
 dgw,log_GWD,transp_GWD,M,C1,C2=Fused_Gromov_Wasserstein_distance(alpha=1,features_metric=fea_metric,method='shortest_path').graph_d(G1,G2,p1,p2)
-plt.title('GWD coupling')
+# plt.title('GWD coupling')
 draw_transp(G1,G2,transp_GWD,shiftx=2,shifty=0.5,thresh=thresh,swipy=True,swipx=False,with_labels=True,vmin=vmin,vmax=vmax)
+plt.axis('off')
 plt.show()
 
 # FGWD
 alpha=0.5
 fig = plt.figure()
 dfgw,log_FGWD,transp_FGWD,M,C1,C2=Fused_Gromov_Wasserstein_distance(alpha=alpha,features_metric=fea_metric,method='shortest_path').graph_d(G1,G2,p1,p2)
-plt.title('FGWD coupling')
+# plt.title('FGWD coupling')
 draw_transp(G1,G2,transp_FGWD,shiftx=2,shifty=0.5,thresh=thresh,swipy=True,swipx=False,with_labels=True,vmin=vmin,vmax=vmax)
+plt.axis('off')
 plt.show()
 
+#%%
+# L = np.array([[0,1,1,0],
+#               [1,0,0,1],
+#               [1,0,0,1],
+#               [1,0,0,1],
+#               [0,1,1,0],
+#               [1,0,0,1],
+#               [1,0,0,1],
+#               [1,0,0,1],
+#               [0,1,1,0]])
+# L = np.array([[0,1,1,0],
+#               [1,0,0,1],
+#               [1,0,0,1],
+#               [0,1,1,0]])
 #%%
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
@@ -89,7 +143,7 @@ from mpl_toolkits import mplot3d
 
 from FGW import cal_L,tensor_matrix,gwloss
 
-A = np.linspace(0,1/3,100)
+A = np.linspace(0,1/3,100)  
 B = np.linspace(0,1/3,100)
 
 y = np.zeros([len(A),len(B)])
@@ -124,9 +178,10 @@ for i in range(len(A)):
         y2[i][j]=(1-alpha)*np.sum(M * T) + alpha * y[i][j] # FGWD
         y_proj[i][j]=0 # projectiion points
         
-        y[i][j]=y[i][j] + reg * np.sum(np.log(T)*T)
+        y[i][j]=y[i][j] + reg * np.sum(np.log(T)*T) # add the entropy actually automatically set the constraint 
         y2[i][j]=y2[i][j] + reg * np.sum(np.log(T)*T)
-        
+        yy[i][j]=yy[i][j] + reg * np.sum(np.log(T)*T)
+
 #%% set all values outside condition to nan
 y[AA+BB > 1/2] = np.nan
 y[AA+BB < 1/6] = np.nan
@@ -136,7 +191,7 @@ y_proj[AA+BB > 1/2] = np.nan
 y_proj[AA+BB < 1/6] = np.nan
 
 #%% plot surface of GWD
-fig = plt.figure()
+fig = plt.figure(figsize=(10,10))
 ax = plt.axes(projection='3d')
 surf = ax.plot_surface(AA,BB,y, cmap=cm.coolwarm,
                         linewidth=0, antialiased=False)
@@ -146,15 +201,19 @@ fig.colorbar(surf, shrink=0.5, aspect=8)
 surf = ax.plot_surface(AA,BB,y_proj, color = '0.95',
                         linewidth=0, antialiased=False)
 
-plt.xlabel('a')
-plt.ylabel('b')
-
+# plt.xlabel('a')
+# plt.ylabel('b')
+# plt.zlabel('GW')
+ax.set_xlabel('a')
+ax.set_ylabel('b')
+ax.set_zlabel('GW')
 plt.show()
 
 #%% plot contour of GWD
-fig = plt.figure()
+fig = plt.figure(figsize=(10,10))
 
 y[np.isnan(y)] = 0 # set nan to zero
+yy[np.isnan(yy)] = 0 # set nan to zero; y and yy are not exactly the same due to numerical calculation 
 
 # levels = np.arange (-3/18, np.max(y), 1/18)
 levels = np.arange (5/18, np.max(y), 1/18)
@@ -162,16 +221,18 @@ levels = np.arange (5/18, np.max(y), 1/18)
 h = plt.contour(A, B, y, levels=levels, cmap=cm.coolwarm, linewidths=3)
 plt.clabel(h, inline=1, fontsize=10, colors='k')
 plt.axis('scaled')
-# plt.colorbar()
+plt.colorbar()
 plt.xlabel('a',fontsize=20)
 plt.ylabel('b',fontsize=20)
+# ax.set_xlabel('a',fontsize=20)
+# ax.set_ylabel('b',fontsize=20)
 
 # plot feasible set
 B1 = 1/6-A
 B2 = 1/2-A
-plt.plot(A,B1,A,B2, color = 'b', linewidth=1, linestyle="--")
+plt.plot(A,B1,A,B2, color = 'r', linewidth=2, linestyle="--")
 
-def plot_seg(point1,point2, color = 'b'):
+def plot_seg(point1,point2, color = 'r'):
     x_values = [point1[0], point2[0]]
     y_values = [point1[1], point2[1]]
     plt.plot(x_values, y_values, color = color , linewidth=2, linestyle="--")
@@ -187,7 +248,7 @@ plt.annotate('B', xy=(0,1/3), xytext=(-0.02, 1/3), color = 'b', arrowprops=dict(
 plt.annotate('C', xy=(1/6,1/3), xytext=(1/6, 1/3+0.02), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 plt.annotate('D', xy=(1/3,1/6), xytext=(1/3+0.02, 1/6), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 plt.annotate('E', xy=(1/3,0), xytext=(1/3+0.02, 0), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
-plt.annotate('F', xy=(1/6,0), xytext=(1/6,-0.02), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
+plt.annotate('F', xy=(1/6,0), xytext=(1/6-0.02, 0), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 
 
 #%% plot the optimization progress of GWD
@@ -208,7 +269,7 @@ while k<=len(T_log)-2:
 plt.show()
 
 #%% plot surface of FGWD
-fig = plt.figure()
+fig = plt.figure(figsize=(8,8))
 ax = plt.axes(projection='3d')
 AA, BB = np.meshgrid(A, B)
 surf = ax.plot_surface(AA,BB,y2, cmap=cm.coolwarm,
@@ -233,13 +294,16 @@ surf = ax.plot_surface(AA,BB,y_proj, color = '0.95',
 # surf = ax.plot_surface(AA,BB,y3, cmap=cm.coolwarm,
 #                         linewidth=0, antialiased=False)
 
-plt.xlabel('a')
-plt.ylabel('b')
+# plt.xlabel('a')
+# plt.ylabel('b')
+# plt.zlabel('FGW')
+ax.set_xlabel('a')
+ax.set_ylabel('b')
+ax.set_zlabel('FGW')
 plt.show()
 
 #%% plot contour of FGWD
-fig = plt.figure()
-
+fig = plt.figure(figsize=(8,8))
 y2[np.isnan(y2)] = 0 # set nan to zero
 
 # levels = np.arange (-3/18, np.max(y2), 1/18)
@@ -248,16 +312,18 @@ levels = np.arange (5/18, np.max(y2), 1/18)
 h = plt.contour(A, B, y2, levels=levels, cmap=cm.coolwarm, linewidths=3)
 plt.clabel(h, inline=1, fontsize=10, colors='k')
 plt.axis('scaled')
-# plt.colorbar()
+plt.colorbar()
 plt.xlabel('a',fontsize=20)
 plt.ylabel('b',fontsize=20)
+# ax.set_xlabel('a',fontsize=20)
+# ax.set_ylabel('b',fontsize=20)
 
 # plot feasible set
 B1 = 1/6-A
 B2 = 1/2-A
-plt.plot(A,B1,A,B2, color = 'b', linewidth=1, linestyle="--")
+plt.plot(A,B1,A,B2, color = 'r', linewidth=2, linestyle="--")
 
-def plot_seg(point1,point2, color = 'b'):
+def plot_seg(point1,point2, color = 'r'):
     x_values = [point1[0], point2[0]]
     y_values = [point1[1], point2[1]]
     plt.plot(x_values, y_values, color = color , linewidth=2, linestyle="--")
@@ -273,10 +339,10 @@ plt.annotate('B', xy=(0,1/3), xytext=(-0.02, 1/3), color = 'b', arrowprops=dict(
 plt.annotate('C', xy=(1/6,1/3), xytext=(1/6, 1/3+0.02), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 plt.annotate('D', xy=(1/3,1/6), xytext=(1/3+0.02, 1/6), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 plt.annotate('E', xy=(1/3,0), xytext=(1/3+0.02, 0), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
-plt.annotate('F', xy=(1/6,0), xytext=(1/6,-0.02), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
+plt.annotate('F', xy=(1/6,0), xytext=(1/6-0.02, 0), color = 'b', arrowprops=dict(facecolor='b', shrink=0.01))
 
 
-#%% plot the optimization progress of GWD
+#%% plot the optimization progress of FGWD
 T_log=log_FGWD['G']
 
 k=0

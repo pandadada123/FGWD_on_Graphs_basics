@@ -134,7 +134,7 @@ plt.show()
 # plt.show()
 #%% POT entropic
 import ot
-eps=0.01
+eps=0.1
 G0=np.outer(p1,p2)
 T, log = ot.gromov.entropic_gromov_wasserstein(C1, C2, p1, p2, loss_fun='square_loss', epsilon=eps, symmetric=None, G0=G0,
                                 max_iter=1000, tol=1e-9, verbose=False, log=True)
@@ -153,12 +153,12 @@ draw_transp(g1,g2,log['T'],shiftx=2,shifty=0.5,thresh=thresh,
 plt.show()
 
 #%% POT normal
-import ot
-G0=np.outer(p1,p2)
-T1, log1 = ot.gromov.gromov_wasserstein(C1, C2, p1, p2, loss_fun='square_loss', symmetric=None, G0=G0,
-                                max_iter=1000, tol=1e-9, verbose=False, log=True)
-fig=plt.figure(figsize=(10,8))
-plt.title('GWD')
-draw_transp(g1,g2,T1,shiftx=2,shifty=0.5,thresh=thresh,
-            swipy=True,swipx=False,with_labels=True,vmin=vmin,vmax=vmax)
-plt.show()
+# import ot
+# G0=np.outer(p1,p2)
+# T1, log1 = ot.gromov.gromov_wasserstein(C1, C2, p1, p2, loss_fun='square_loss', symmetric=None, G0=G0,
+#                                 max_iter=1000, tol=1e-9, verbose=False, log=True)
+# fig=plt.figure(figsize=(10,8))
+# plt.title('GWD')
+# draw_transp(g1,g2,T1,shiftx=2,shifty=0.5,thresh=thresh,
+#             swipy=True,swipx=False,with_labels=True,vmin=vmin,vmax=vmax)
+# plt.show()
