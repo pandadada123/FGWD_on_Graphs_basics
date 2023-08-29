@@ -1,3 +1,10 @@
+*Additions:*
+* [plot_nonconvex.ipynb](/examples_my/plot_nonconvex.ipynb): Visualization of FGW nonconvexity
+  	- <img src="/examples_my/simple_surface_GWD.png" width="200" height="150"> <img src="/examples_my/simple_contour_GWD.png" width="200" height="150">
+  	- <img src="/examples_my/simple_surface_FGWD.png" width="200" height="150"> <img src="/examples_my/simple_contour_FGWD.png" width="200" height="150">
+
+---
+*Original instructions for the package:*
 
 # FGW
 
